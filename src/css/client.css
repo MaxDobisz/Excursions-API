@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+body {
+    background: rgb(79, 136, 194);
+    background: linear-gradient(93deg, rgb(108, 171, 234) 30%, rgba(58, 94, 172, 1) 99%);
+}
+
 ul {
     list-style: none;
 }
@@ -15,30 +20,125 @@ ul {
     padding: 30px 0;
 }
 
-.panel__excursins {
+.excursions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 30px;
+    padding: 10px;
     width: 70%;
 }
 
-.excursions {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.excurions__item {
-    border: 1px solid #bbb;
+.excursions__item {
+    background-color: rgb(59, 59, 59);
     border-radius: 5px;
+    box-shadow: 0px 0px 3px 10px rgb(59, 59, 59);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: max-content;
     margin: 10px;
     padding: 20px;
-    width: calc(50% - 20px);
+    width: calc(50% - 40px);
+}
+
+.excursions__item--prototype {
+    display: none;
+}
+
+.excursions__title {
+    font: 50px bold;
+    text-align: center;
+}
+
+.excursions__description {
+    margin: 15px 0;
+    text-align: justify;
+}
+
+
+
+.excursions__field-input {
+    background-color: rgba(63, 95, 118, 0.853);
+    border-radius: 7px;
+    color: whitesmoke;
+    outline: none;
+    text-align: center;
+    width: 20%;
+}
+
+.excursions__field-input--submit,
+.order__field-submit {
+    background-color: rgb(61, 78, 206);
+    border-radius: 10px;
+    color: whitesmoke;
+    display: flex;
+    justify-content: center;
+    margin: 20px auto 0;
+    padding: 5px;
+    width: max-content;
+}
+
+.border-color-error {
+    box-shadow: 0px 0px 10px 2px red;
+}
+
+.wrong_value_text {
+    color: red;
+    margin: 10px;
+    text-align: center;
 }
 
 .panel__form {
     background-color: #f4f4f4;
+    border-radius: 10px;
+    height: max-content;
     padding: 20px;
     width: 30%;
 }
 
-.uploader, .order {
+.panel__order {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 30px 0;
+}
+
+label {
+    display: flex;
+    flex-direction: column;
+}
+
+.excursions__field-name {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.adult-price,
+.child-price {
+    margin-left: 10px;
+    margin-right: 5px;
+}
+
+.panel__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summary__item--prototype {
+    display: none;
+}
+
+.summary__btn-remove {
+    color: red;
+    font-size: 0.7em;
+}
+
+.uploader,
+.order {
     border-bottom: 1px solid #bbb;
     margin-bottom: 20px;
     padding-bottom: 20px;
