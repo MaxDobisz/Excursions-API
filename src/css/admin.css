@@ -5,8 +5,6 @@
 }
 
 body {
-    color: rgb(27, 27, 27);
-    background: rgb(21, 206, 250);
     background: linear-gradient(93deg, rgba(21, 206, 250, 1) 30%, rgba(0, 81, 255, 1) 100%);
 }
 
@@ -29,9 +27,8 @@ ul {
 
 .panel__excursions {
     display: flex;
-    flex-direction: row-reverse;
+    flex-direction: row;
     flex-wrap: wrap;
-    justify-content: center;
 }
 
 .excursions__item {
