@@ -1,51 +1,15 @@
 import './../css/client.css';
 import ExcursionsAPI from './ExcursionsAPI';
+import Helpers from './helpers';
+const api = new ExcursionsAPI();
+const helpers = new Helpers();
+
 document.addEventListener('DOMContentLoaded', init);
-const api = new ExcursionsAPI();   
 
 function init() {
-    loadExcursionsToDom();
+    helpers.loadExcursionsToDom()
+        .finally(() => addExcursionToSummary());
     submitOrder();
-}
-
-const excursionsPanelEl = document.querySelector('.panel__excursions');
-
-function loadExcursionsToDom () {
-    removeChildElements(excursionsPanelEl);
-    
-    api.loadData()
-        .then(excursionsArr => {
-            excursionsArr.forEach( excursionObj => createDomEl(excursionObj) ) 
-        })
-        .catch(err => console.log(err))
-        .finally(addExcursionToSummary);
-}
-
-function removeChildElements(parentEl) {
-    while(!parentEl.lastElementChild.className.includes('prototype')) {
-        parentEl.removeChild(parentEl.lastElementChild);
-    }
-}
-
-function createDomEl(excursionObj) {
-    const excursionElPrototype = document.querySelector('.excursions__item--prototype');
-    const newExcursionEl = excursionElPrototype.cloneNode(true);
-    newExcursionEl.classList.remove('excursions__item--prototype');
-    newExcursionEl.dataset.id = excursionObj.id;
-    const titleEl = newExcursionEl.querySelector('.excursions__title');
-    titleEl.innerText = excursionObj.title;
-    const descriptionEl = newExcursionEl.querySelector('.excursions__description');
-    descriptionEl.innerText = excursionObj.description;
-    const adultPriceEl = newExcursionEl.querySelector('.adult-price');
-    adultPriceEl.innerText = excursionObj.adultPrice;
-    const childPriceEl = newExcursionEl.querySelector('.child-price');
-    childPriceEl.innerText = excursionObj.childPrice;
-    
-    addElToDom(excursionsPanelEl, newExcursionEl);
-}
-
-function addElToDom(parentEl, childEl) {
-    parentEl.appendChild(childEl);
 }
 
 function addExcursionToSummary() {
@@ -57,6 +21,7 @@ function addExcursionToSummary() {
             
             const amountAdult = excursionsFormEl.elements[0].value;
             const amountChild = excursionsFormEl.elements[1].value;
+
             const inputPattern = /^[1-9]{1}[0-9]?$/;
             
             if(inputPattern.test(amountAdult) && inputPattern.test(amountChild)) {
@@ -81,8 +46,8 @@ function addExcursionToSummary() {
                 const summaryTotalPrice = newSummaryItem.querySelector('.summary__total-price');
                 summaryTotalPrice.innerText = `${amountAdult * priceAdult + amountChild * priceChild} PLN`;
 
-                addElToDom(summaryPanel, newSummaryItem)
-                clearElValue(excursionsFormEl.elements[0], excursionsFormEl.elements[1]);
+                helpers.addElToDom(summaryPanel, newSummaryItem)
+                helpers.clearElValue(excursionsFormEl.elements[0], excursionsFormEl.elements[1]);
                 updateTotalPriceSummary();
                 removeSummaryItem();
             } else {
@@ -109,15 +74,11 @@ function createErrorField(parent, innerText) {
     nameError.innerText = innerText;
     nameError.classList.add('wrong_value_text');
     
-    addElToDom(parent, nameError);
+    helpers.addElToDom(parent, nameError);
 }
 
 function removeExcursionItemErrorField(errorFieldItem) {
     errorFieldItem.removeChild(errorFieldItem.lastElementChild);
-}
-
-function clearElValue(...arr) {
-    arr.forEach(el => el.value = '');
 }
 
 function removeSummaryItem() {
@@ -159,42 +120,17 @@ function submitOrder() {
         e.preventDefault();
         clearErrors();
 
-        const namePattern = /^[a-z]{2,}\s{1}[a-z]{2,}$/i;
-        const emailPattern = /^\w{1}[\w_-]*\w{1}[\w_-]*\w{1}@{1}\w{1}[\w_-]*\w{1}\.{1}\w+$/i;
-
-        if(!namePattern.test(orderPanel.elements.name.value)) {
+        if(nameIncorrect()) {
             createErrorField(orderPanel, 'Provide the correct name');
         }
 
-        if(!emailPattern.test(orderPanel.elements.email.value)) {
+        if(emailInccorect()) {
             createErrorField(orderPanel, 'Provide the correct email');
         }
 
-        if(namePattern.test(orderPanel.elements.name.value) && emailPattern.test(orderPanel.elements.email.value)) {
-            const ordersList = [];
-            const panelSummary = document.querySelectorAll('.summary__item');
-
-            panelSummary.forEach( item => {
-                const totalPriceEl = item.querySelector('.summary__total-price');
-                const orderDetails = {
-                    name: item.firstElementChild.firstElementChild.innerText,
-                    price: totalPriceEl.innerText,
-                    orderDetails: item.lastElementChild.innerText
-                }
-                ordersList.push(orderDetails);
-            })
-
-            const excursionsTotalPricesValueEl = document.querySelector('.order__total-price-value');
-
-            const order = {
-                customerName: orderPanel.elements.name.value,
-                customeEmail: orderPanel.elements.email.value,
-                totalPrice: excursionsTotalPricesValueEl.innerText,
-                details: ordersList
-            }
-            
+        if(!nameIncorrect() && !emailInccorect()) {
+            const order = createOrdersObj();
             api.addData(order, 'orders');
-            
             clearInputs(orderPanel.elements.name, orderPanel.elements.email);
             removeSummaryItems();
             updateTotalPriceSummary();
@@ -209,6 +145,58 @@ function clearErrors() {
     while(orderPanel.lastElementChild.className.includes('wrong_value_text')) {
         orderPanel.removeChild(orderPanel.lastElementChild);
     }
+}
+
+function nameIncorrect() {
+    const orderPanel = document.querySelector('.panel__order');
+    const namePattern = /^[a-z]{2,}\s{1}[a-z]{2,}$/i;
+
+    if(!namePattern.test(orderPanel.elements.name.value)) {
+        return true;
+    }
+}
+
+function emailInccorect() {
+    const orderPanel = document.querySelector('.panel__order');
+    const emailPattern = /^\w{1}[\w_-]*\w{1}[\w_-]*\w{1}@{1}\w{1}[\w_-]*\w{1}\.{1}\w+$/i;
+
+    if(!emailPattern.test(orderPanel.elements.email.value)) {
+        return true;
+    }
+}
+
+function createOrdersObj() {
+    const ordersArr = createOrdersArr();
+    const orderPanel = document.querySelector('.panel__order');
+    const excursionsTotalPricesValueEl = document.querySelector('.order__total-price-value');
+
+    const order = {
+        customerName: orderPanel.elements.name.value,
+        customeEmail: orderPanel.elements.email.value,
+        totalPrice: excursionsTotalPricesValueEl.innerText,
+        details: ordersArr
+    }
+
+    return order;
+}
+
+function createOrdersArr() {
+    const ordersList = [];
+    const summaryItemsList = document.querySelectorAll('.summary__item');
+
+    summaryItemsList.forEach( item => {
+        const totalPriceEl = item.querySelector('.summary__total-price');
+
+        const orderDetails = {
+            name: item.firstElementChild.firstElementChild.innerText,
+            price: totalPriceEl.innerText,
+            orderDetails: item.lastElementChild.innerText
+        }
+
+        ordersList.push(orderDetails);
+    })
+
+    return ordersList;
 }
 
 function clearInputs(...inputs) {
